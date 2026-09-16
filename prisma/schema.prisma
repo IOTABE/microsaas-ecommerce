@@ -1,0 +1,323 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserRole {
+  owner
+  admin
+  operator
+  support
+}
+
+enum OrderStatus {
+  pending_payment
+  payment_confirmed
+  in_preparation
+  shipped
+  delivered
+  cancelled
+}
+
+enum PaymentMethod {
+  pix
+  credit_card
+  boleto
+}
+
+enum PaymentStatus {
+  pending
+  paid
+  failed
+  refunded
+}
+
+enum CampaignChannel {
+  email
+  whatsapp
+  both
+}
+
+enum CampaignStatus {
+  draft
+  scheduled
+  running
+  completed
+  failed
+}
+
+enum DispatchStatus {
+  queued
+  sent
+  delivered
+  read
+  failed
+}
+
+model Tenant {
+  id           String          @id @default(uuid()) @db.Uuid
+  slug         String          @unique @db.VarChar(64)
+  companyName  String          @map("company_name") @db.VarChar(150)
+  documentCnpj String?         @map("document_cnpj") @db.VarChar(20)
+  planTier     String          @default("starter") @map("plan_tier") @db.VarChar(30)
+  isActive     Boolean         @default(true) @map("is_active")
+  createdAt    DateTime        @default(now()) @map("created_at")
+  updatedAt    DateTime        @updatedAt @map("updated_at")
+
+  branding           TenantBranding?
+  users              User[]
+  leads              Lead[]
+  customers          Customer[]
+  products           Product[]
+  orders             Order[]
+  campaigns          Campaign[]
+
+  @@map("tenants")
+}
+
+model TenantBranding {
+  id                          String   @id @default(uuid()) @db.Uuid
+  tenantId                    String   @unique @map("tenant_id") @db.Uuid
+  primaryColor                String   @default("#2563eb") @map("primary_color") @db.VarChar(7)
+  secondaryColor              String   @default("#1e293b") @map("secondary_color") @db.VarChar(7)
+  backgroundColor             String   @default("#ffffff") @map("background_color") @db.VarChar(7)
+  logoUrl                     String?  @map("logo_url")
+  faviconUrl                  String?  @map("favicon_url")
+  deliveryFeeBelowThreshold   Decimal  @default(15.00) @map("delivery_fee_below_threshold") @db.Decimal(10, 2)
+  createdAt                   DateTime @default(now()) @map("created_at")
+  updatedAt                   DateTime @updatedAt @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("tenant_brandings")
+}
+
+model User {
+  id           String   @id @default(uuid()) @db.Uuid
+  tenantId     String   @map("tenant_id") @db.Uuid
+  name         String   @db.VarChar(120)
+  email        String   @db.VarChar(180)
+  passwordHash String   @map("password_hash") @db.VarChar(255)
+  role         UserRole @default(operator)
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, email], name: "uq_users_tenant_email")
+  @@index([tenantId])
+  @@map("users")
+}
+
+model Lead {
+  id          String   @id @default(uuid()) @db.Uuid
+  tenantId    String   @map("tenant_id") @db.Uuid
+  name        String   @db.VarChar(100)
+  whatsapp    String   @db.VarChar(20)
+  source      String?  @default("home_widget") @db.VarChar(50)
+  consentLgpd Boolean  @default(true) @map("consent_lgpd")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, whatsapp], name: "uq_leads_tenant_whatsapp")
+  @@index([tenantId])
+  @@map("leads")
+}
+
+model Customer {
+  id              String   @id @default(uuid()) @db.Uuid
+  tenantId        String   @map("tenant_id") @db.Uuid
+  fullName        String   @map("full_name") @db.VarChar(150)
+  documentCpfCnpj String   @map("document_cpf_cnpj") @db.VarChar(20)
+  email           String   @db.VarChar(180)
+  phone           String   @db.VarChar(20)
+  notes           String?
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  tenant    Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  addresses CustomerAddress[]
+  orders    Order[]
+
+  @@unique([tenantId, documentCpfCnpj], name: "uq_customers_tenant_doc")
+  @@unique([tenantId, email], name: "uq_customers_tenant_email")
+  @@index([tenantId])
+  @@map("customers")
+}
+
+model CustomerAddress {
+  id           String   @id @default(uuid()) @db.Uuid
+  tenantId     String   @map("tenant_id") @db.Uuid
+  customerId   String   @map("customer_id") @db.Uuid
+  zipCode      String   @map("zip_code") @db.VarChar(10)
+  street       String   @db.VarChar(180)
+  number       String   @db.VarChar(20)
+  complement   String?  @db.VarChar(80)
+  neighborhood String   @db.VarChar(100)
+  city         String   @db.VarChar(100)
+  state        String   @db.VarChar(2)
+  isDefault    Boolean  @default(false) @map("is_default")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, customerId])
+  @@map("customer_addresses")
+}
+
+model Product {
+  id               String   @id @default(uuid()) @db.Uuid
+  tenantId         String   @map("tenant_id") @db.Uuid
+  sku              String   @db.VarChar(60)
+  title            String   @db.VarChar(180)
+  description      String?
+  price            Decimal  @db.Decimal(10, 2)
+  promotionalPrice Decimal? @map("promotional_price") @db.Decimal(10, 2)
+  costPrice        Decimal? @map("cost_price") @db.Decimal(10, 2)
+  stockQuantity    Int      @default(0) @map("stock_quantity")
+  imageUrl         String?  @map("image_url")
+  isActive         Boolean  @default(true) @map("is_active")
+  isFeatured       Boolean  @default(false) @map("is_featured")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  tenant     Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  orderItems OrderItem[]
+
+  @@unique([tenantId, sku], name: "uq_products_tenant_sku")
+  @@index([tenantId, isActive])
+  @@map("products")
+}
+
+model Order {
+  id             String      @id @default(uuid()) @db.Uuid
+  tenantId       String      @map("tenant_id") @db.Uuid
+  customerId     String      @map("customer_id") @db.Uuid
+  orderNumber    BigInt      @default(autoincrement()) @map("order_number")
+  subtotal       Decimal     @db.Decimal(10, 2)
+  shippingFee    Decimal     @default(0.00) @map("shipping_fee") @db.Decimal(10, 2)
+  discountAmount Decimal     @default(0.00) @map("discount_amount") @db.Decimal(10, 2)
+  totalAmount    Decimal     @map("total_amount") @db.Decimal(10, 2)
+  isGift         Boolean     @default(false) @map("is_gift")
+  giftMessage    String?     @map("gift_message") @db.VarChar(250)
+  status         OrderStatus @default(pending_payment)
+  createdAt      DateTime    @default(now()) @map("created_at")
+  updatedAt      DateTime    @updatedAt @map("updated_at")
+
+  tenant              Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer            Customer             @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  items               OrderItem[]
+  paymentTransactions PaymentTransaction[]
+  postSaleLogs        PostSaleLog[]
+
+  @@index([tenantId, status])
+  @@index([tenantId, customerId])
+  @@map("orders")
+}
+
+model OrderItem {
+  id         String   @id @default(uuid()) @db.Uuid
+  tenantId   String   @map("tenant_id") @db.Uuid
+  orderId    String   @map("order_id") @db.Uuid
+  productId  String   @map("product_id") @db.Uuid
+  quantity   Int
+  unitPrice  Decimal  @map("unit_price") @db.Decimal(10, 2)
+  totalPrice Decimal  @map("total_price") @db.Decimal(10, 2)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId, orderId])
+  @@map("order_items")
+}
+
+model PaymentTransaction {
+  id              String        @id @default(uuid()) @db.Uuid
+  tenantId        String        @map("tenant_id") @db.Uuid
+  orderId         String        @map("order_id") @db.Uuid
+  gatewayProvider String        @map("gateway_provider") @db.VarChar(50)
+  externalId      String?       @map("external_id") @db.VarChar(150)
+  paymentMethod   PaymentMethod @map("payment_method")
+  status          PaymentStatus @default(pending)
+  amount          Decimal       @db.Decimal(10, 2)
+  pixQrCode       String?       @map("pix_qr_code")
+  pixCopyPaste    String?       @map("pix_copy_paste")
+  rawPayload      Json?         @map("raw_payload")
+  paidAt          DateTime?     @map("paid_at")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, externalId])
+  @@map("payment_transactions")
+}
+
+model PostSaleLog {
+  id           String   @id @default(uuid()) @db.Uuid
+  tenantId     String   @map("tenant_id") @db.Uuid
+  orderId      String   @map("order_id") @db.Uuid
+  stage        String   @db.VarChar(60)
+  trackingCode String?  @map("tracking_code") @db.VarChar(100)
+  trackingUrl  String?  @map("tracking_url")
+  notes        String?
+  metadata     Json?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, orderId])
+  @@map("post_sale_logs")
+}
+
+model Campaign {
+  id             String          @id @default(uuid()) @db.Uuid
+  tenantId       String          @map("tenant_id") @db.Uuid
+  name           String          @db.VarChar(150)
+  channel        CampaignChannel @default(both)
+  status         CampaignStatus  @default(draft)
+  subject        String?         @db.VarChar(200)
+  contentText    String          @map("content_text")
+  couponCode     String?         @map("coupon_code") @db.VarChar(40)
+  targetAudience String?         @default("all") @map("target_audience") @db.VarChar(50)
+  scheduledAt    DateTime?       @map("scheduled_at")
+  startedAt      DateTime?       @map("started_at")
+  completedAt    DateTime?       @map("completed_at")
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+
+  tenant     Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  dispatches CampaignDispatch[]
+
+  @@index([tenantId, status])
+  @@map("campaigns")
+}
+
+model CampaignDispatch {
+  id            String          @id @default(uuid()) @db.Uuid
+  tenantId      String          @map("tenant_id") @db.Uuid
+  campaignId    String          @map("campaign_id") @db.Uuid
+  recipientType String          @map("recipient_type") @db.VarChar(20)
+  recipientId   String          @map("recipient_id") @db.Uuid
+  destination   String          @db.VarChar(180)
+  channel       CampaignChannel
+  status        DispatchStatus  @default(queued)
+  errorMessage  String?         @map("error_message")
+  sentAt        DateTime?       @map("sent_at")
+  deliveredAt   DateTime?       @map("delivered_at")
+  createdAt     DateTime        @default(now()) @map("created_at")
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, campaignId, status])
+  @@map("campaign_dispatches")
+}
