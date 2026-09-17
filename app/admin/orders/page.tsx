@@ -2,14 +2,11 @@
 
 import React, { useState } from 'react';
 import {
-  ShoppingCart,
   Gift,
   Truck,
   CheckCircle,
   Clock,
-  Send,
   MessageSquare,
-  ChevronRight
 } from 'lucide-react';
 
 interface OrderMock {
@@ -102,35 +99,37 @@ export default function AdminOrdersPage() {
   };
 
   const getStatusBadge = (status: OrderMock['status']) => {
+    const base =
+      'px-2.5 py-0.5 rounded-full font-bold text-[10px] inline-flex items-center gap-1 border';
     switch (status) {
       case 'pending_payment':
         return (
-          <span className="bg-amber-50 text-amber-700 px-2.5 py-0.5 rounded-full font-bold text-[10px] flex items-center gap-1">
+          <span className={`${base} bg-amber-500/15 text-amber-300 border-amber-400/25`}>
             <Clock className="w-3 h-3" /> Aguardando Pagamento
           </span>
         );
       case 'paid':
         return (
-          <span className="bg-emerald-50 text-emerald-700 px-2.5 py-0.5 rounded-full font-bold text-[10px] flex items-center gap-1">
+          <span className={`${base} bg-emerald-500/15 text-emerald-300 border-emerald-400/25`}>
             <CheckCircle className="w-3 h-3" /> Pagamento Aprovado
           </span>
         );
       case 'in_preparation':
         return (
-          <span className="bg-blue-50 text-blue-700 px-2.5 py-0.5 rounded-full font-bold text-[10px] flex items-center gap-1">
+          <span className={`${base} bg-blue-500/15 text-blue-300 border-blue-400/25`}>
             <Clock className="w-3 h-3" /> Em Separação
           </span>
         );
       case 'shipped':
         return (
-          <span className="bg-purple-50 text-purple-700 px-2.5 py-0.5 rounded-full font-bold text-[10px] flex items-center gap-1">
+          <span className={`${base} bg-purple-500/15 text-purple-300 border-purple-400/25`}>
             <Truck className="w-3 h-3" /> Despachado
           </span>
         );
       case 'delivered':
         return (
-          <span className="bg-slate-100 text-slate-800 px-2.5 py-0.5 rounded-full font-bold text-[10px] flex items-center gap-1">
-            <CheckCircle className="w-3 h-3 text-emerald-600" /> Entregue
+          <span className={`${base} bg-slate-500/15 text-slate-300 border-slate-400/25`}>
+            <CheckCircle className="w-3 h-3 text-emerald-400" /> Entregue
           </span>
         );
     }
@@ -139,21 +138,21 @@ export default function AdminOrdersPage() {
   return (
     <div className="space-y-6 max-w-6xl">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Vendas & Pós-Vendas</h1>
-        <p className="text-xs text-slate-500 mt-0.5">
+        <h1 className="text-2xl font-bold text-white">Vendas & Pós-Vendas</h1>
+        <p className="text-xs text-slate-400 mt-0.5">
           Acompanhe os pedidos, identifique solicitações de presente e gerencie a esteira de entrega.
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Coluna 1 & 2: Lista de Pedidos */}
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="p-4 border-b border-slate-100 flex items-center justify-between">
-            <h2 className="font-bold text-slate-900 text-sm">Pedidos Recentes</h2>
-            <span className="text-xs text-slate-400 font-mono">{orders.length} pedidos</span>
+        <div className="lg:col-span-2 panel-solid overflow-hidden">
+          <div className="p-4 border-b border-white/[0.07] flex items-center justify-between">
+            <h2 className="font-bold text-white text-sm">Pedidos Recentes</h2>
+            <span className="text-xs text-slate-500 font-mono">{orders.length} pedidos</span>
           </div>
 
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-white/[0.06]">
             {orders.map((order) => (
               <div
                 key={order.id}
@@ -161,31 +160,33 @@ export default function AdminOrdersPage() {
                   setSelectedOrder(order);
                   setTrackingInput(order.trackingCode || '');
                 }}
-                className={`p-4 hover:bg-slate-50 cursor-pointer transition flex items-center justify-between ${
-                  selectedOrder?.id === order.id ? 'bg-blue-50/40 border-l-4 border-blue-600' : ''
+                className={`p-4 hover:bg-white/[0.03] cursor-pointer transition flex items-center justify-between ${
+                  selectedOrder?.id === order.id
+                    ? 'bg-blue-500/10 border-l-4 border-blue-500'
+                    : 'border-l-4 border-transparent'
                 }`}
               >
                 <div className="space-y-1.5">
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono font-bold text-xs text-slate-900">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-mono font-bold text-xs text-white">
                       #{order.orderNumber}
                     </span>
                     {getStatusBadge(order.status)}
                     {order.isGift && (
-                      <span className="bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full font-bold text-[10px] flex items-center gap-1 border border-rose-200">
-                        <Gift className="w-3 h-3 text-rose-600" /> Presente
+                      <span className="bg-rose-500/15 text-rose-300 px-2 py-0.5 rounded-full font-bold text-[10px] flex items-center gap-1 border border-rose-400/25">
+                        <Gift className="w-3 h-3 text-rose-400" /> Presente
                       </span>
                     )}
                   </div>
 
-                  <p className="text-xs text-slate-600">
-                    <strong>{order.customerName}</strong> • {order.customerPhone}
+                  <p className="text-xs text-slate-400">
+                    <strong className="text-slate-200">{order.customerName}</strong> • {order.customerPhone}
                   </p>
-                  <span className="text-[10px] text-slate-400">{order.date}</span>
+                  <span className="text-[10px] text-slate-500">{order.date}</span>
                 </div>
 
                 <div className="text-right space-y-1">
-                  <div className="font-bold text-sm text-slate-900">
+                  <div className="font-bold text-sm text-white">
                     R$ {order.total.toFixed(2)}
                   </div>
                   <span className="text-[10px] text-slate-500 block">
@@ -199,62 +200,62 @@ export default function AdminOrdersPage() {
 
         {/* Coluna 3: Detalhes do Pós-Vendas & Expedição */}
         {selectedOrder && (
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-5">
-            <div className="border-b border-slate-100 pb-3">
+          <div className="panel-solid p-5 space-y-5">
+            <div className="border-b border-white/[0.07] pb-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-mono font-bold text-slate-400">
+                <span className="text-xs font-mono font-bold text-slate-500">
                   PEDIDO #{selectedOrder.orderNumber}
                 </span>
                 {getStatusBadge(selectedOrder.status)}
               </div>
-              <h3 className="font-bold text-slate-900 text-base mt-1">
+              <h3 className="font-bold text-white text-base mt-1">
                 {selectedOrder.customerName}
               </h3>
-              <p className="text-xs text-slate-500">{selectedOrder.customerPhone}</p>
+              <p className="text-xs text-slate-400">{selectedOrder.customerPhone}</p>
             </div>
 
             {/* Alerta de Presente & Dedicatória */}
             {selectedOrder.isGift ? (
-              <div className="bg-rose-50 p-4 rounded-xl border border-rose-200 space-y-2">
-                <div className="flex items-center gap-2 text-rose-900 font-bold text-xs">
-                  <Gift className="w-4 h-4 text-rose-600" />
+              <div className="bg-rose-500/10 p-4 rounded-xl border border-rose-400/25 space-y-2">
+                <div className="flex items-center gap-2 text-rose-200 font-bold text-xs">
+                  <Gift className="w-4 h-4 text-rose-400" />
                   <span>EMBALAGEM DE PRESENTE EXIGIDA</span>
                 </div>
-                <div className="bg-white p-3 rounded-lg border border-rose-200 text-xs text-rose-800">
-                  <span className="font-semibold block text-[10px] text-rose-500 uppercase tracking-wider mb-1">
+                <div className="bg-white/[0.04] p-3 rounded-lg border border-rose-400/20 text-xs text-rose-100">
+                  <span className="font-semibold block text-[10px] text-rose-300/80 uppercase tracking-wider mb-1">
                     Cartão Dedicatória:
                   </span>
                   &ldquo;{selectedOrder.giftMessage || 'Sem mensagem no cartão'}&rdquo;
                 </div>
               </div>
             ) : (
-              <div className="bg-slate-50 p-3 rounded-xl text-xs text-slate-500">
+              <div className="bg-white/[0.03] p-3 rounded-xl text-xs text-slate-400 border border-white/[0.06]">
                 Pedido regular (embalagem padrão de envio).
               </div>
             )}
 
             {/* Atualização de Etapa do Pós-Venda */}
             <div className="space-y-3">
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide">
+              <label className="block text-xs font-bold text-slate-300 uppercase tracking-wide">
                 Avançar Esteira de Pós-Venda
               </label>
 
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => handleUpdateStatus(selectedOrder.id, 'in_preparation')}
-                  className="p-2 border border-slate-200 rounded-lg text-xs hover:bg-slate-50 font-medium"
+                  className="p-2 border border-white/[0.09] rounded-lg text-xs hover:bg-white/[0.06] font-medium text-slate-200 transition"
                 >
                   Em Separação
                 </button>
                 <button
                   onClick={() => handleUpdateStatus(selectedOrder.id, 'shipped')}
-                  className="p-2 border border-slate-200 rounded-lg text-xs hover:bg-purple-50 text-purple-700 font-medium"
+                  className="p-2 border border-purple-400/25 bg-purple-500/10 rounded-lg text-xs hover:bg-purple-500/20 text-purple-200 font-medium transition"
                 >
                   Despachado
                 </button>
                 <button
                   onClick={() => handleUpdateStatus(selectedOrder.id, 'delivered')}
-                  className="p-2 col-span-2 border border-emerald-200 bg-emerald-50 rounded-lg text-xs hover:bg-emerald-100 text-emerald-800 font-bold"
+                  className="p-2 col-span-2 border border-emerald-400/30 bg-emerald-500/15 rounded-lg text-xs hover:bg-emerald-500/25 text-emerald-200 font-bold transition"
                 >
                   Confirmar Entrega ao Cliente
                 </button>
@@ -262,8 +263,8 @@ export default function AdminOrdersPage() {
             </div>
 
             {/* Código de Rastreio */}
-            <div className="space-y-2 pt-2 border-t border-slate-100">
-              <label className="block text-xs font-semibold text-slate-700">
+            <div className="space-y-2 pt-2 border-t border-white/[0.07]">
+              <label className="block text-xs font-semibold text-slate-300">
                 Código de Rastreamento (Correios / Loggi)
               </label>
               <div className="flex gap-2">
@@ -272,13 +273,13 @@ export default function AdminOrdersPage() {
                   value={trackingInput}
                   onChange={(e) => setTrackingInput(e.target.value)}
                   placeholder="EX: BR987654321XP"
-                  className="w-full text-xs p-2 border border-slate-200 rounded-lg"
+                  className="input-dark"
                 />
                 <button
                   onClick={() =>
                     handleUpdateStatus(selectedOrder.id, 'shipped', trackingInput)
                   }
-                  className="px-3 py-2 bg-slate-900 text-white text-xs font-bold rounded-lg hover:bg-black"
+                  className="btn-primary shrink-0"
                 >
                   Salvar
                 </button>
@@ -286,14 +287,14 @@ export default function AdminOrdersPage() {
             </div>
 
             {/* Disparo de Pós-Venda / Pesquisa NPS */}
-            <div className="pt-2 border-t border-slate-100">
+            <div className="pt-2 border-t border-white/[0.07]">
               <button
                 onClick={() =>
                   alert(
                     `Disparo de pesquisa de satisfação NPS enviado via WhatsApp para ${selectedOrder.customerPhone}!`
                   )
                 }
-                className="w-full py-2.5 px-3 bg-purple-50 text-purple-700 border border-purple-200 rounded-xl text-xs font-semibold hover:bg-purple-100 transition flex items-center justify-center gap-2"
+                className="w-full py-2.5 px-3 bg-purple-500/10 text-purple-200 border border-purple-400/25 rounded-xl text-xs font-semibold hover:bg-purple-500/20 transition flex items-center justify-center gap-2"
               >
                 <MessageSquare className="w-4 h-4" />
                 <span>Enviar Pesquisa de Satisfação (NPS)</span>

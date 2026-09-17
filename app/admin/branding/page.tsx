@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Palette, KeyRound, Image as ImageIcon, Save, CheckCircle2 } from 'lucide-react';
+import { Palette, KeyRound, Save, CheckCircle2 } from 'lucide-react';
 
 export default function BrandingAndProfilePage() {
   // Cores
@@ -43,25 +43,22 @@ export default function BrandingAndProfilePage() {
   return (
     <div className="space-y-6 max-w-4xl">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Perfil, Branding & Segurança</h1>
-        <p className="text-xs text-slate-500 mt-0.5">
+        <h1 className="text-2xl font-bold text-white">Perfil, Branding & Segurança</h1>
+        <p className="text-xs text-slate-400 mt-0.5">
           Personalize a identidade visual (cores e logo) da sua vitrine e altere sua senha de acesso.
         </p>
       </div>
 
       {/* Seção 1: Identidade Visual & Cores */}
-      <form
-        onSubmit={handleSaveBranding}
-        className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6"
-      >
-        <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-          <Palette className="w-5 h-5 text-pink-600" />
-          <h2 className="font-bold text-slate-900 text-sm">Configuração de Cores & Logo</h2>
+      <form onSubmit={handleSaveBranding} className="panel-solid p-6 space-y-6">
+        <div className="flex items-center gap-2 border-b border-white/[0.07] pb-3">
+          <Palette className="w-5 h-5 text-pink-400" />
+          <h2 className="font-bold text-white text-sm">Configuração de Cores & Logo</h2>
         </div>
 
         {savedSuccess && (
-          <div className="p-3 bg-emerald-50 text-emerald-800 text-xs rounded-xl flex items-center gap-2 border border-emerald-200">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+          <div className="p-3 bg-emerald-500/10 text-emerald-200 text-xs rounded-xl flex items-center gap-2 border border-emerald-400/25">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
             <span>Configurações visuais salvas com sucesso!</span>
           </div>
         )}
@@ -69,61 +66,55 @@ export default function BrandingAndProfilePage() {
         {/* Cores */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-              Cor Primária (Botões e Destaques)
-            </label>
+            <label className="field-label">Cor Primária (Botões e Destaques)</label>
             <div className="flex items-center gap-2">
               <input
                 type="color"
                 value={primaryColor}
                 onChange={(e) => setPrimaryColor(e.target.value)}
-                className="w-10 h-10 rounded-lg cursor-pointer border border-slate-200"
+                className="w-10 h-10 rounded-lg cursor-pointer bg-transparent border border-white/10"
               />
               <input
                 type="text"
                 value={primaryColor}
                 onChange={(e) => setPrimaryColor(e.target.value)}
-                className="text-xs font-mono p-2 border border-slate-200 rounded-lg w-28"
+                className="input-dark font-mono w-28"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-              Cor Secundária (Textos e Bordas)
-            </label>
+            <label className="field-label">Cor Secundária (Textos e Bordas)</label>
             <div className="flex items-center gap-2">
               <input
                 type="color"
                 value={secondaryColor}
                 onChange={(e) => setSecondaryColor(e.target.value)}
-                className="w-10 h-10 rounded-lg cursor-pointer border border-slate-200"
+                className="w-10 h-10 rounded-lg cursor-pointer bg-transparent border border-white/10"
               />
               <input
                 type="text"
                 value={secondaryColor}
                 onChange={(e) => setSecondaryColor(e.target.value)}
-                className="text-xs font-mono p-2 border border-slate-200 rounded-lg w-28"
+                className="input-dark font-mono w-28"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-              Cor de Fundo do Banner (Background)
-            </label>
+            <label className="field-label">Cor de Fundo do Banner (Background)</label>
             <div className="flex items-center gap-2">
               <input
                 type="color"
                 value={backgroundColor}
                 onChange={(e) => setBackgroundColor(e.target.value)}
-                className="w-10 h-10 rounded-lg cursor-pointer border border-slate-200"
+                className="w-10 h-10 rounded-lg cursor-pointer bg-transparent border border-white/10"
               />
               <input
                 type="text"
                 value={backgroundColor}
                 onChange={(e) => setBackgroundColor(e.target.value)}
-                className="text-xs font-mono p-2 border border-slate-200 rounded-lg w-28"
+                className="input-dark font-mono w-28"
               />
             </div>
           </div>
@@ -131,20 +122,20 @@ export default function BrandingAndProfilePage() {
 
         {/* Logo URL */}
         <div className="space-y-2">
-          <label className="block text-xs font-semibold text-slate-700">URL do Logotipo</label>
+          <label className="field-label">URL do Logotipo</label>
           <div className="flex items-center gap-3">
             <input
               type="url"
               value={logoUrl}
               onChange={(e) => setLogoUrl(e.target.value)}
               placeholder="https://sua-empresa.com/logo.png"
-              className="w-full text-xs p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="input-dark"
             />
             {logoUrl && (
               <img
                 src={logoUrl}
                 alt="Prévia do Logo"
-                className="w-10 h-10 rounded-lg object-cover border border-slate-200"
+                className="w-10 h-10 rounded-lg object-cover border border-white/10 shrink-0"
               />
             )}
           </div>
@@ -152,7 +143,7 @@ export default function BrandingAndProfilePage() {
 
         {/* Taxa de Entrega Padrão */}
         <div className="max-w-xs">
-          <label className="block text-xs font-semibold text-slate-700 mb-1">
+          <label className="field-label">
             Taxa de Entrega para Pedidos &lt; R$ 150,00 (R$)
           </label>
           <input
@@ -160,54 +151,48 @@ export default function BrandingAndProfilePage() {
             step="0.50"
             value={deliveryFee}
             onChange={(e) => setDeliveryFee(e.target.value)}
-            className="w-full text-xs p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="input-dark"
           />
-          <span className="text-[10px] text-slate-400 mt-1 block">
+          <span className="text-[10px] text-slate-500 mt-1 block">
             Pedidos iguais ou superiores a R$ 150,00 recebem Frete Grátis automaticamente.
           </span>
         </div>
 
-        <button
-          type="submit"
-          className="py-2.5 px-5 bg-slate-900 text-white text-xs font-bold rounded-xl hover:bg-black transition flex items-center gap-2 shadow-sm"
-        >
+        <button type="submit" className="btn-primary">
           <Save className="w-4 h-4" />
           <span>Salvar Alterações Visuais</span>
         </button>
       </form>
 
       {/* Seção 2: Troca de Senha */}
-      <form
-        onSubmit={handleUpdatePassword}
-        className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4"
-      >
-        <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-          <KeyRound className="w-5 h-5 text-blue-600" />
-          <h2 className="font-bold text-slate-900 text-sm">Segurança & Alteração de Senha</h2>
+      <form onSubmit={handleUpdatePassword} className="panel-solid p-6 space-y-4">
+        <div className="flex items-center gap-2 border-b border-white/[0.07] pb-3">
+          <KeyRound className="w-5 h-5 text-blue-400" />
+          <h2 className="font-bold text-white text-sm">Segurança & Alteração de Senha</h2>
         </div>
 
         {passwordSuccess && (
-          <div className="p-3 bg-emerald-50 text-emerald-800 text-xs rounded-xl flex items-center gap-2 border border-emerald-200">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+          <div className="p-3 bg-emerald-500/10 text-emerald-200 text-xs rounded-xl flex items-center gap-2 border border-emerald-400/25">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
             <span>Senha alterada com sucesso!</span>
           </div>
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">Senha Atual *</label>
+            <label className="field-label">Senha Atual *</label>
             <input
               type="password"
               required
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full text-xs p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="input-dark"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">Nova Senha *</label>
+            <label className="field-label">Nova Senha *</label>
             <input
               type="password"
               required
@@ -215,29 +200,24 @@ export default function BrandingAndProfilePage() {
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               placeholder="Mínimo 6 caracteres"
-              className="w-full text-xs p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="input-dark"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">
-              Confirmar Nova Senha *
-            </label>
+            <label className="field-label">Confirmar Nova Senha *</label>
             <input
               type="password"
               required
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="Repita a nova senha"
-              className="w-full text-xs p-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="input-dark"
             />
           </div>
         </div>
 
-        <button
-          type="submit"
-          className="py-2 px-4 bg-blue-600 text-white text-xs font-bold rounded-xl hover:bg-blue-700 transition flex items-center gap-2 shadow-sm"
-        >
+        <button type="submit" className="btn-primary">
           <KeyRound className="w-4 h-4" />
           <span>Atualizar Senha</span>
         </button>

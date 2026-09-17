@@ -47,6 +47,52 @@ export interface LeadInput {
   tenantSlug: string;
   name: string;
   whatsapp: string;
+  birthDate?: string;
   source?: string;
   consentLgpd: boolean;
+}
+
+export interface ProductData {
+  id: string;
+  sku: string;
+  title: string;
+  description: string;
+  price: number;
+  stockQuantity: number;
+  imageUrl: string | null;
+  isFeatured: boolean;
+}
+
+export interface ProductInput {
+  tenantSlug?: string;
+  sku: string;
+  title: string;
+  description?: string;
+  price: number;
+  stockQuantity: number;
+  imageUrl?: string | null;
+  isFeatured?: boolean;
+}
+
+export interface CustomerData {
+  id: string;
+  fullName: string;
+  documentCpfCnpj: string;
+  email: string;
+  phone: string;
+  city: string;
+  state: string;
+  birthDate: string | null;
+  totalOrders: number;
+}
+
+export interface CustomerInput {
+  tenantSlug?: string;
+  fullName: string;
+  documentCpfCnpj: string;
+  email: string;
+  phone: string;
+  city?: string;
+  state?: string;
+  birthDate?: string | null;
 }

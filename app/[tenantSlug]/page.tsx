@@ -8,7 +8,7 @@ import { Navbar } from '@/components/Navbar';
 import { LeadWidget } from '@/components/LeadWidget';
 import { ProductCatalog } from '@/components/ProductCatalog';
 import { CartDrawer } from '@/components/CartDrawer';
-import { CartItem } from '@/lib/types';
+import { CartItem, ProductData } from '@/lib/types';
 import { Sparkles, Heart } from 'lucide-react';
 
 export default function TenantStorefrontPage() {
@@ -16,10 +16,29 @@ export default function TenantStorefrontPage() {
   const tenantSlug = typeof params.tenantSlug === 'string' ? params.tenantSlug : 'demo-loja';
   const tenant = getTenantBySlug(tenantSlug);
 
+  const [products, setProducts] = useState<ProductData[]>(DEMO_PRODUCTS);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isGift, setIsGift] = useState(false);
   const [giftMessage, setGiftMessage] = useState('');
+
+  // Carrega catálogo da API (com fallback para os dados de demonstração)
+  useEffect(() => {
+    let active = true;
+    fetch(`/api/products?tenantSlug=${tenantSlug}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (active && Array.isArray(data.products) && data.products.length > 0) {
+          setProducts(data.products);
+        }
+      })
+      .catch(() => {
+        /* mantém os produtos de demonstração */
+      });
+    return () => {
+      active = false;
+    };
+  }, [tenantSlug]);
 
   // Carrega carrinho do localStorage
   useEffect(() => {
@@ -106,7 +125,7 @@ export default function TenantStorefrontPage() {
 
         {/* Grade de Produtos */}
         <main className="flex-1">
-          <ProductCatalog products={DEMO_PRODUCTS} onAddToCart={handleAddToCart} />
+          <ProductCatalog products={products} onAddToCart={handleAddToCart} />
         </main>
 
         {/* Drawer do Carrinho */}

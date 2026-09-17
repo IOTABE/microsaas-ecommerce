@@ -6,6 +6,7 @@ const leadSchema = z.object({
   tenantSlug: z.string(),
   name: z.string().min(2, 'Nome muito curto'),
   whatsapp: z.string().min(10, 'WhatsApp deve conter DDD e número'),
+  birthDate: z.string().optional(),
   consentLgpd: z.boolean(),
   source: z.string().optional(),
 });
@@ -31,12 +32,14 @@ export async function POST(req: NextRequest) {
           },
           update: {
             name: parsed.name,
+            birthDate: parsed.birthDate ? new Date(parsed.birthDate) : undefined,
             updatedAt: new Date(),
           },
           create: {
             tenantId: tenant.id,
             name: parsed.name,
             whatsapp: parsed.whatsapp,
+            birthDate: parsed.birthDate ? new Date(parsed.birthDate) : null,
             consentLgpd: parsed.consentLgpd,
             source: parsed.source || 'home_widget',
           },

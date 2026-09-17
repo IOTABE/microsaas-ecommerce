@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Sparkles, MessageCircle, CheckCircle, AlertCircle, Send } from 'lucide-react';
+import { Sparkles, MessageCircle, CheckCircle, AlertCircle, Send, Calendar } from 'lucide-react';
 
 interface LeadWidgetProps {
   tenantSlug: string;
@@ -10,6 +10,7 @@ interface LeadWidgetProps {
 export function LeadWidget({ tenantSlug }: LeadWidgetProps) {
   const [name, setName] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
+  const [birthDate, setBirthDate] = useState('');
   const [consentLgpd, setConsentLgpd] = useState(true);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -34,6 +35,7 @@ export function LeadWidget({ tenantSlug }: LeadWidgetProps) {
           tenantSlug,
           name,
           whatsapp: cleanPhone,
+          birthDate: birthDate || undefined,
           consentLgpd,
         }),
       });
@@ -46,6 +48,7 @@ export function LeadWidget({ tenantSlug }: LeadWidgetProps) {
       setSuccess(true);
       setName('');
       setWhatsapp('');
+      setBirthDate('');
     } catch (err: any) {
       setError(err.message || 'Falha na conexão com o servidor');
     } finally {
@@ -127,6 +130,22 @@ export function LeadWidget({ tenantSlug }: LeadWidgetProps) {
                     className="w-full px-3.5 py-2.5 text-xs glass-input focus:outline-none pl-9"
                   />
                   <MessageCircle className="w-4 h-4 text-emerald-500 absolute left-3 top-3" />
+                </div>
+              </div>
+
+              <div className="sm:col-span-2">
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5 ml-1">
+                  Data de Nascimento <span className="text-slate-400 font-normal">(opcional)</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type="date"
+                    value={birthDate}
+                    onChange={(e) => setBirthDate(e.target.value)}
+                    max={new Date().toISOString().split('T')[0]}
+                    className="w-full px-3.5 py-2.5 text-xs glass-input focus:outline-none pl-9"
+                  />
+                  <Calendar className="w-4 h-4 text-blue-400 absolute left-3 top-3 pointer-events-none" />
                 </div>
               </div>
             </div>

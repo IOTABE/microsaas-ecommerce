@@ -1,173 +1,256 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Package, Plus, CheckCircle2, Trash2, Edit } from 'lucide-react';
-import { DEMO_PRODUCTS } from '@/lib/tenant';
+import React, { useEffect, useState } from 'react';
+import { Package, Plus, CheckCircle2, Trash2, Pencil, X, AlertCircle } from 'lucide-react';
+import type { ProductData } from '@/lib/types';
+
+const TENANT_SLUG = 'demo-loja';
+
+const EMPTY_FORM = {
+  sku: '',
+  title: '',
+  description: '',
+  price: '',
+  stock: '',
+  imageUrl: '',
+  isFeatured: false,
+};
 
 export default function AdminProductsPage() {
-  const [products, setProducts] = useState(DEMO_PRODUCTS);
+  const [products, setProducts] = useState<ProductData[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
   // Formulário
-  const [sku, setSku] = useState('');
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [price, setPrice] = useState('');
-  const [stock, setStock] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
-  const [isFeatured, setIsFeatured] = useState(false);
-  const [successMsg, setSuccessMsg] = useState(false);
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [feedback, setFeedback] = useState<{ type: 'ok' | 'error'; text: string } | null>(null);
 
-  const handleCreateProduct = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const newProd = {
-      id: `prod_${Date.now()}`,
-      sku: sku.toUpperCase(),
-      title,
-      description,
-      price: parseFloat(price) || 0,
-      stockQuantity: parseInt(stock, 10) || 0,
-      imageUrl:
-        imageUrl ||
-        'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&h=400&fit=crop',
-      isFeatured,
-    };
-
-    setProducts([newProd, ...products]);
-    setShowModal(false);
-    setSuccessMsg(true);
-
-    // Limpa campos
-    setSku('');
-    setTitle('');
-    setDescription('');
-    setPrice('');
-    setStock('');
-    setImageUrl('');
-    setIsFeatured(false);
-
-    setTimeout(() => setSuccessMsg(false), 3000);
+  const notify = (type: 'ok' | 'error', text: string) => {
+    setFeedback({ type, text });
+    setTimeout(() => setFeedback(null), 3500);
   };
 
-  const handleDelete = (id: string) => {
-    setProducts(products.filter((p) => p.id !== id));
+  const loadProducts = async () => {
+    try {
+      const res = await fetch(`/api/products?tenantSlug=${TENANT_SLUG}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Falha ao carregar produtos');
+      setProducts(data.products || []);
+    } catch (err: any) {
+      notify('error', err.message || 'Erro ao carregar produtos');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+  const openCreate = () => {
+    setEditingId(null);
+    setForm(EMPTY_FORM);
+    setShowModal(true);
+  };
+
+  const openEdit = (p: ProductData) => {
+    setEditingId(p.id);
+    setForm({
+      sku: p.sku,
+      title: p.title,
+      description: p.description,
+      price: String(p.price),
+      stock: String(p.stockQuantity),
+      imageUrl: p.imageUrl ?? '',
+      isFeatured: p.isFeatured,
+    });
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setEditingId(null);
+    setForm(EMPTY_FORM);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+
+    const payload = {
+      tenantSlug: TENANT_SLUG,
+      sku: form.sku.toUpperCase(),
+      title: form.title,
+      description: form.description,
+      price: parseFloat(form.price) || 0,
+      stockQuantity: parseInt(form.stock, 10) || 0,
+      imageUrl: form.imageUrl || null,
+      isFeatured: form.isFeatured,
+    };
+
+    try {
+      const res = await fetch(editingId ? `/api/products/${editingId}` : '/api/products', {
+        method: editingId ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Falha ao salvar produto');
+
+      const saved: ProductData = data.product;
+      setProducts((prev) =>
+        editingId ? prev.map((p) => (p.id === editingId ? saved : p)) : [saved, ...prev]
+      );
+
+      notify('ok', editingId ? 'Produto atualizado com sucesso!' : 'Produto adicionado ao catálogo!');
+      closeModal();
+    } catch (err: any) {
+      notify('error', err.message || 'Erro ao salvar produto');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    const prod = products.find((p) => p.id === id);
+    if (!window.confirm(`Excluir o produto "${prod?.title ?? ''}"?`)) return;
+
+    try {
+      const res = await fetch(`/api/products/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Falha ao excluir produto');
+
+      setProducts((prev) => prev.filter((p) => p.id !== id));
+      notify('ok', 'Produto removido do catálogo.');
+    } catch (err: any) {
+      notify('error', err.message || 'Erro ao excluir produto');
+    }
   };
 
   return (
     <div className="space-y-6 max-w-6xl">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Catálogo de Produtos</h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Cadastre novos itens para a vitrine, ajuste preços e controle estoques.
+          <h1 className="text-2xl font-bold text-white">Catálogo de Produtos</h1>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Cadastre, edite e remova itens da vitrine. Ajuste preços e controle estoques.
           </p>
         </div>
 
-        <button
-          onClick={() => setShowModal(true)}
-          className="py-2.5 px-4 bg-blue-600 text-white text-xs font-bold rounded-xl hover:bg-blue-700 transition flex items-center gap-2 shadow-sm"
-        >
+        <button onClick={openCreate} className="btn-primary">
           <Plus className="w-4 h-4" />
           <span>Cadastrar Produto</span>
         </button>
       </div>
 
-      {successMsg && (
-        <div className="p-3 bg-emerald-50 text-emerald-800 text-xs rounded-xl flex items-center gap-2 border border-emerald-200">
-          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-          <span>Produto adicionado com sucesso ao catálogo!</span>
+      {feedback && (
+        <div
+          className={`p-3 text-xs rounded-xl flex items-center gap-2 border ${
+            feedback.type === 'ok'
+              ? 'bg-emerald-500/10 text-emerald-300 border-emerald-400/25'
+              : 'bg-red-500/10 text-red-300 border-red-400/25'
+          }`}
+        >
+          {feedback.type === 'ok' ? (
+            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          ) : (
+            <AlertCircle className="w-4 h-4 text-red-400" />
+          )}
+          <span>{feedback.text}</span>
         </div>
       )}
 
-      {/* Modal de Cadastro */}
+      {/* Modal de Cadastro / Edição */}
       {showModal && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4">
-            <h2 className="text-base font-bold text-slate-900">Novo Produto</h2>
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="panel-solid max-w-lg w-full p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-bold text-white">
+                {editingId ? 'Editar Produto' : 'Novo Produto'}
+              </h2>
+              <button
+                type="button"
+                onClick={closeModal}
+                className="p-1.5 rounded-lg text-slate-400 hover:bg-white/[0.06] hover:text-white transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
 
-            <form onSubmit={handleCreateProduct} className="space-y-3">
+            <form onSubmit={handleSubmit} className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Código SKU *
-                  </label>
+                  <label className="field-label">Código SKU *</label>
                   <input
                     type="text"
                     required
-                    value={sku}
-                    onChange={(e) => setSku(e.target.value)}
+                    value={form.sku}
+                    onChange={(e) => setForm({ ...form, sku: e.target.value })}
                     placeholder="EX: PRES-005"
-                    className="w-full text-xs p-2.5 border border-slate-200 rounded-lg"
+                    className="input-dark"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Preço de Venda (R$) *
-                  </label>
+                  <label className="field-label">Preço de Venda (R$) *</label>
                   <input
                     type="number"
                     step="0.01"
                     required
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
+                    value={form.price}
+                    onChange={(e) => setForm({ ...form, price: e.target.value })}
                     placeholder="89.90"
-                    className="w-full text-xs p-2.5 border border-slate-200 rounded-lg"
+                    className="input-dark"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Título do Produto *
-                </label>
+                <label className="field-label">Título do Produto *</label>
                 <input
                   type="text"
                   required
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
+                  value={form.title}
+                  onChange={(e) => setForm({ ...form, title: e.target.value })}
                   placeholder="Nome do produto"
-                  className="w-full text-xs p-2.5 border border-slate-200 rounded-lg"
+                  className="input-dark"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Descrição</label>
+                <label className="field-label">Descrição</label>
                 <textarea
                   rows={2}
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
+                  value={form.description}
+                  onChange={(e) => setForm({ ...form, description: e.target.value })}
                   placeholder="Detalhes, medidas e características..."
-                  className="w-full text-xs p-2.5 border border-slate-200 rounded-lg"
+                  className="input-dark"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Quantidade em Estoque *
-                  </label>
+                  <label className="field-label">Quantidade em Estoque *</label>
                   <input
                     type="number"
                     required
-                    value={stock}
-                    onChange={(e) => setStock(e.target.value)}
+                    value={form.stock}
+                    onChange={(e) => setForm({ ...form, stock: e.target.value })}
                     placeholder="20"
-                    className="w-full text-xs p-2.5 border border-slate-200 rounded-lg"
+                    className="input-dark"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    URL da Imagem
-                  </label>
+                  <label className="field-label">URL da Imagem</label>
                   <input
                     type="url"
-                    value={imageUrl}
-                    onChange={(e) => setImageUrl(e.target.value)}
+                    value={form.imageUrl}
+                    onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
                     placeholder="https://..."
-                    className="w-full text-xs p-2.5 border border-slate-200 rounded-lg"
+                    className="input-dark"
                   />
                 </div>
               </div>
@@ -176,28 +259,25 @@ export default function AdminProductsPage() {
                 <input
                   type="checkbox"
                   id="featured"
-                  checked={isFeatured}
-                  onChange={(e) => setIsFeatured(e.target.checked)}
-                  className="w-4 h-4 rounded text-blue-600"
+                  checked={form.isFeatured}
+                  onChange={(e) => setForm({ ...form, isFeatured: e.target.checked })}
+                  className="w-4 h-4 rounded accent-blue-500"
                 />
-                <label htmlFor="featured" className="text-xs text-slate-700 font-medium">
+                <label htmlFor="featured" className="text-xs text-slate-300 font-medium">
                   Destacar este produto na vitrine principal
                 </label>
               </div>
 
-              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl"
-                >
+              <div className="flex justify-end gap-2 pt-3 border-t border-white/[0.07]">
+                <button type="button" onClick={closeModal} className="btn-ghost">
                   Cancelar
                 </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl"
-                >
-                  Salvar Produto
+                <button type="submit" disabled={saving} className="btn-primary">
+                  {saving
+                    ? 'Salvando...'
+                    : editingId
+                    ? 'Salvar Alterações'
+                    : 'Salvar Produto'}
                 </button>
               </div>
             </form>
@@ -206,10 +286,10 @@ export default function AdminProductsPage() {
       )}
 
       {/* Tabela de Produtos */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
+      <div className="panel-solid overflow-hidden">
+        <div className="admin-scroll overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase">
+            <thead className="bg-white/[0.03] border-b border-white/[0.07] text-slate-400 font-semibold uppercase">
               <tr>
                 <th className="p-4">Produto</th>
                 <th className="p-4">SKU</th>
@@ -219,56 +299,88 @@ export default function AdminProductsPage() {
                 <th className="p-4 text-right">Ações</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
-              {products.map((p) => (
-                <tr key={p.id} className="hover:bg-slate-50/50">
-                  <td className="p-4 flex items-center gap-3">
-                    <img
-                      src={p.imageUrl}
-                      alt={p.title}
-                      className="w-10 h-10 object-cover rounded-lg border border-slate-200"
-                    />
-                    <div>
-                      <span className="font-semibold text-slate-900 block">{p.title}</span>
-                      <span className="text-[10px] text-slate-400 line-clamp-1">
-                        {p.description}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="p-4 font-mono text-slate-600">{p.sku}</td>
-                  <td className="p-4 font-bold text-slate-900">R$ {p.price.toFixed(2)}</td>
-                  <td className="p-4">
-                    <span
-                      className={`px-2 py-0.5 rounded-full font-semibold text-[10px] ${
-                        p.stockQuantity > 5
-                          ? 'bg-emerald-50 text-emerald-700'
-                          : 'bg-red-50 text-red-700'
-                      }`}
-                    >
-                      {p.stockQuantity} unid.
-                    </span>
-                  </td>
-                  <td className="p-4">
-                    {p.isFeatured && (
-                      <span className="bg-amber-50 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                        Destaque
-                      </span>
-                    )}
-                  </td>
-                  <td className="p-4 text-right">
-                    <button
-                      onClick={() => handleDelete(p.id)}
-                      className="p-1 text-slate-400 hover:text-red-600 rounded"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+            <tbody className="divide-y divide-white/[0.06]">
+              {loading ? (
+                <tr>
+                  <td colSpan={6} className="p-8 text-center text-slate-500">
+                    Carregando produtos...
                   </td>
                 </tr>
-              ))}
+              ) : products.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="p-8 text-center text-slate-500">
+                    Nenhum produto cadastrado.
+                  </td>
+                </tr>
+              ) : (
+                products.map((p) => (
+                  <tr key={p.id} className="hover:bg-white/[0.03] transition">
+                    <td className="p-4 flex items-center gap-3">
+                      <img
+                        src={
+                          p.imageUrl ||
+                          'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&h=400&fit=crop'
+                        }
+                        alt={p.title}
+                        className="w-10 h-10 object-cover rounded-lg border border-white/10"
+                      />
+                      <div>
+                        <span className="font-semibold text-white block">{p.title}</span>
+                        <span className="text-[10px] text-slate-500 line-clamp-1">
+                          {p.description}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="p-4 font-mono text-slate-400">{p.sku}</td>
+                    <td className="p-4 font-bold text-white">R$ {p.price.toFixed(2)}</td>
+                    <td className="p-4">
+                      <span
+                        className={`px-2 py-0.5 rounded-full font-semibold text-[10px] ${
+                          p.stockQuantity > 5
+                            ? 'bg-emerald-500/15 text-emerald-300'
+                            : 'bg-red-500/15 text-red-300'
+                        }`}
+                      >
+                        {p.stockQuantity} unid.
+                      </span>
+                    </td>
+                    <td className="p-4">
+                      {p.isFeatured && (
+                        <span className="bg-amber-500/15 text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                          Destaque
+                        </span>
+                      )}
+                    </td>
+                    <td className="p-4">
+                      <div className="flex items-center justify-end gap-1">
+                        <button
+                          onClick={() => openEdit(p)}
+                          title="Editar"
+                          className="p-1.5 text-slate-400 hover:text-blue-300 hover:bg-blue-500/10 rounded transition"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(p.id)}
+                          title="Excluir"
+                          className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded transition"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
       </div>
+
+      <p className="text-[11px] text-slate-500 flex items-center gap-1.5">
+        <Package className="w-3.5 h-3.5 text-blue-400" />
+        {products.length} produtos cadastrados.
+      </p>
     </div>
   );
 }
