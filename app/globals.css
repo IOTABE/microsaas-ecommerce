@@ -91,6 +91,134 @@ body {
   .m3-button:active {
     transform: scale(0.98);
   }
+
+  /* ==============================================================================
+     PAINEL ADMINISTRATIVO — TEMA ESCURO (LOJISTAPRO)
+     ============================================================================== */
+
+  /* Fundo do shell com brilhos em gradiente (azul/roxo) */
+  .admin-shell {
+    background-color: #070b18;
+    background-image:
+      radial-gradient(900px 520px at 12% -8%, rgba(59, 130, 246, 0.16), transparent 60%),
+      radial-gradient(820px 520px at 92% -4%, rgba(168, 85, 247, 0.14), transparent 58%),
+      radial-gradient(760px 620px at 65% 112%, rgba(14, 165, 233, 0.08), transparent 62%);
+    background-attachment: fixed;
+  }
+
+  /* Cartão padrão do painel */
+  .panel {
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 1.25rem;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 18px 40px -24px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+
+  /* Cartão mais sólido (tabelas / kanban) */
+  .panel-solid {
+    background: rgba(11, 16, 33, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 1.25rem;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 18px 40px -26px rgba(0, 0, 0, 0.95);
+  }
+
+  /* Rótulo de campo */
+  .field-label {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #94a3b8;
+    margin-bottom: 0.25rem;
+  }
+
+  /* Inputs escuros */
+  .input-dark {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 0.75rem;
+    color: #e2e8f0;
+    font-size: 0.75rem;
+    padding: 0.625rem 0.75rem;
+    transition: all 0.2s ease;
+  }
+  .input-dark::placeholder {
+    color: #64748b;
+  }
+  .input-dark:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.22);
+    background: rgba(255, 255, 255, 0.06);
+  }
+  select.input-dark option {
+    background: #0f172a;
+    color: #e2e8f0;
+  }
+
+  /* Botão primário com gradiente e brilho */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border-radius: 0.75rem;
+    padding: 0.625rem 1rem;
+    box-shadow: 0 10px 26px -10px rgba(37, 99, 235, 0.85);
+    transition: all 0.2s ease;
+  }
+  .btn-primary:hover {
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+  }
+  .btn-primary:disabled {
+    opacity: 0.5;
+    transform: none;
+  }
+
+  /* Botão secundário */
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #cbd5e1;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 0.75rem;
+    padding: 0.625rem 1rem;
+    transition: all 0.2s ease;
+  }
+  .btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+  }
+
+  /* Barra de rolagem discreta para o painel */
+  .admin-scroll::-webkit-scrollbar {
+    height: 8px;
+    width: 8px;
+  }
+  .admin-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .admin-scroll::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.25);
+    border-radius: 9999px;
+  }
+  .admin-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(148, 163, 184, 0.45);
+  }
 }
 
 /* Fallback para navegadores sem suporte a backdrop-filter */

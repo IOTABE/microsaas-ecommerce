@@ -71,6 +71,31 @@ export const DEMO_PRODUCTS = [
   }
 ];
 
+export const DEMO_CUSTOMERS = [
+  {
+    id: 'c1',
+    fullName: 'Beatriz Vasconcelos',
+    documentCpfCnpj: '123.456.789-00',
+    email: 'beatriz@email.com',
+    phone: '(11) 99876-1122',
+    city: 'São Paulo',
+    state: 'SP',
+    birthDate: '1992-04-18',
+    totalOrders: 3,
+  },
+  {
+    id: 'c2',
+    fullName: 'Rodrigo Mendonça',
+    documentCpfCnpj: '987.654.321-99',
+    email: 'rodrigo@email.com',
+    phone: '(21) 98765-4321',
+    city: 'Rio de Janeiro',
+    state: 'RJ',
+    birthDate: '1988-11-02',
+    totalOrders: 1,
+  },
+];
+
 export function getTenantBySlug(slug: string): TenantData {
   return (
     DEMO_TENANTS[slug] || {

@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
             select: { name: true, whatsapp: true },
           });
           recipients.push(
-            ...leads.map((l) => ({
+            ...leads.map((l: { name: string; whatsapp: string }) => ({
               name: l.name,
               destination: l.whatsapp,
               type: 'lead' as const,
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
             select: { fullName: true, phone: true, email: true },
           });
           recipients.push(
-            ...customers.map((c) => ({
+            ...customers.map((c: { fullName: string; phone: string; email: string }) => ({
               name: c.fullName,
               destination: data.channel === 'email' ? c.email : c.phone,
               type: 'customer' as const,

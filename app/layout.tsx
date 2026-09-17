@@ -2,8 +2,9 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Micro SaaS Multitenant E-commerce & CRM',
-  description: 'Plataforma SaaS de e-commerce com multitenant, leads, checkout e pós-vendas.',
+  title: 'MicroSaaS E-commerce — Sua loja online em 2 minutos',
+  description:
+    'Plataforma completa de e-commerce SaaS com CRM, captura de leads, checkout com PIX, campanhas de WhatsApp e painel administrativo. Sem contrato, cancele quando quiser.',
 };
 
 export default function RootLayout({
