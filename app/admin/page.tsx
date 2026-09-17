@@ -9,6 +9,8 @@ import {
   Trash2,
   TrendingUp,
 } from 'lucide-react';
+import { BirthdayCard } from '@/components/BirthdayCard';
+import { getTenantBySlug } from '@/lib/tenant';
 
 const KPIS = [
   {
@@ -149,8 +151,13 @@ const KANBAN: KanbanColumn[] = [
 const Y_LABELS = ['R$ 20k', 'R$ 15k', 'R$ 10k', 'R$ 5k', 'R$ 0'];
 
 export default function AdminDashboardPage() {
+  const tenant = getTenantBySlug('demo-loja');
+
   return (
     <div className="space-y-6 max-w-6xl">
+      {/* Aniversariantes de Hoje */}
+      <BirthdayCard tenantSlug={tenant.slug} storeName={tenant.companyName} />
+
       {/* KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {KPIS.map(({ label, value, delta, icon: Icon, accent }) => {

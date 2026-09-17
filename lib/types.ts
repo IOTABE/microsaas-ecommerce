@@ -86,6 +86,25 @@ export interface CustomerData {
   totalOrders: number;
 }
 
+export interface LeadRecord {
+  id: string;
+  name: string;
+  whatsapp: string;
+  birthDate: string | null;
+  source: string;
+  createdAt: string;
+}
+
+export interface BirthdayPerson {
+  id: string;
+  name: string;
+  phone: string;
+  email: string | null;
+  type: 'lead' | 'customer';
+  birthDate: string;
+  age: number;
+}
+
 export interface CustomerInput {
   tenantSlug?: string;
   fullName: string;

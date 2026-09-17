@@ -167,8 +167,16 @@ export default function LandingPage() {
           plan: selectedPlan,
         }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Erro ao criar loja');
+      const text = await res.text();
+      let data: { error?: string; storeUrl?: string; adminUrl?: string } = {};
+      if (text) {
+        try {
+          data = JSON.parse(text);
+        } catch {
+          data = {};
+        }
+      }
+      if (!res.ok) throw new Error(data.error || `Erro ao criar loja (HTTP ${res.status})`);
       setResult({ success: true, storeUrl: data.storeUrl, adminUrl: data.adminUrl });
     } catch (err: any) {
       setResult({ success: false, error: err.message });

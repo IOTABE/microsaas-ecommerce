@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getStore } from '@/lib/memory-store';
 import { z } from 'zod';
 
 const leadSchema = z.object({
@@ -51,16 +52,26 @@ export async function POST(req: NextRequest) {
       console.warn('DB não acessível ou em modo simulado. Gravando lead em modo fallback:', dbError);
     }
 
-    // Retorno em modo desenvolvimento/demonstração
-    return NextResponse.json({
-      success: true,
-      lead: {
-        id: `lead_${Date.now()}`,
-        name: parsed.name,
-        whatsapp: parsed.whatsapp,
-        createdAt: new Date().toISOString(),
-      },
-    });
+    // Retorno em modo desenvolvimento/demonstração (persiste no store em memória)
+    const store = getStore();
+    const existing = store.leads.find((l) => l.whatsapp === parsed.whatsapp);
+    if (existing) {
+      existing.name = parsed.name;
+      if (parsed.birthDate) existing.birthDate = parsed.birthDate;
+      return NextResponse.json({ success: true, lead: existing });
+    }
+
+    const lead = {
+      id: `lead_${Date.now()}`,
+      name: parsed.name,
+      whatsapp: parsed.whatsapp,
+      birthDate: parsed.birthDate || null,
+      source: parsed.source || 'home_widget',
+      createdAt: new Date().toISOString(),
+    };
+    store.leads.unshift(lead);
+
+    return NextResponse.json({ success: true, lead });
   } catch (err: any) {
     return NextResponse.json(
       { error: err.errors?.[0]?.message || err.message || 'Erro ao processar lead' },

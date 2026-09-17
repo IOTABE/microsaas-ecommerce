@@ -2,21 +2,10 @@
 
 import React from 'react';
 import { ShoppingBag, Plus, Star, Sparkles } from 'lucide-react';
-import { CartItem } from '@/lib/types';
-
-interface Product {
-  id: string;
-  sku: string;
-  title: string;
-  description: string;
-  price: number;
-  stockQuantity: number;
-  imageUrl: string;
-  isFeatured: boolean;
-}
+import { CartItem, ProductData } from '@/lib/types';
 
 interface ProductCatalogProps {
-  products: Product[];
+  products: ProductData[];
   onAddToCart: (item: CartItem) => void;
 }
 
@@ -46,7 +35,7 @@ export function ProductCatalog({ products, onAddToCart }: ProductCatalogProps) {
             {/* Imagem do Produto com cantos arredondados Material You */}
             <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-slate-100/60 mb-3.5 shadow-inner">
               <img
-                src={product.imageUrl}
+                src={product.imageUrl || '/placeholder.svg'}
                 alt={product.title}
                 className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
               />

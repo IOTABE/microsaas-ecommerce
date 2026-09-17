@@ -40,9 +40,17 @@ export function LeadWidget({ tenantSlug }: LeadWidgetProps) {
         }),
       });
 
-      const data = await res.json();
+      const text = await res.text();
+      let data: { error?: string } = {};
+      if (text) {
+        try {
+          data = JSON.parse(text);
+        } catch {
+          data = {};
+        }
+      }
       if (!res.ok) {
-        throw new Error(data.error || 'Erro ao registrar contato');
+        throw new Error(data.error || `Erro ao registrar contato (HTTP ${res.status})`);
       }
 
       setSuccess(true);
